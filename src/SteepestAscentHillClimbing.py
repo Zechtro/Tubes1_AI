@@ -20,9 +20,7 @@ def SteepestAscentHillClimbing(init_cube):
             current_cube = best_neighbor
             current_value = best_value
         else:
-            return cubes, values
-        
-        print("Curr Val: ", current_value)
+            return cubes, values, count_iter
         
         cubes.append(current_cube)
         values.append(current_value)
