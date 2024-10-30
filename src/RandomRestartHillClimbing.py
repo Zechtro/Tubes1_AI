@@ -2,20 +2,32 @@ from ObjFunct import objFunc
 from SteepestAscentHillClimbing import SteepestAscentHillClimbing
 from Tools import RandomCube
 
-def RandomRestartHillClimbing(max_iter):
-    current_cube = RandomCube()
+def RandomRestartHillClimbing(init_cube, max_restart):
+    current_cube = init_cube
     current_value = objFunc(current_cube)
-    iter = 1
+    restart = 0
+    cubes, values, count_iter = SteepestAscentHillClimbing(init_cube)
     
-    while iter <= max_iter:
-        new_cube, new_value = SteepestAscentHillClimbing()
-        print(f"best value iter ke-{iter} = {new_value}")
-        if new_value < current_value:
-            current_value = new_value
-            current_cube = new_cube
-        iter += 1
+    cubes_per_restart = [cubes]
+    values_per_restart = [values]
+    iteration_per_restart = [count_iter]
+    
+    print(f"best value restart ke-{restart} = {values[-1]}")
+    if values[-1] < current_value:
+        current_value = values[-1]
+        current_cube = cubes[-1]
+    
+    while restart <= max_restart:
+        restart += 1
+        cubes, values, count_iter = SteepestAscentHillClimbing(RandomCube())
+        
+        cubes_per_restart.append(cubes)
+        values_per_restart.append(values)
+        iteration_per_restart.append(count_iter)
+        
+        print(f"best value restart ke-{restart} = {values[-1]}")
+        if values[-1] < current_value:
+            current_value = values[-1]
+            current_cube = cubes[-1]
 
-    return current_cube, current_value
-
-best_cube, best_value =RandomRestartHillClimbing(50)
-print(best_value)
+    return cubes_per_restart, values_per_restart, iteration_per_restart, restart

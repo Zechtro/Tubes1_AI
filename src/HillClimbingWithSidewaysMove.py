@@ -2,21 +2,27 @@ import numpy as np
 from ObjFunct import objFunc
 from Tools import GenerateNeighbor, RandomCube
 
-def HillClimbingWithSidewaysMove():
-    cube = RandomCube()
-    current_cube = cube
-    current_value = objFunc(cube)
-    best_value = -110
+def HillClimbingWithSidewaysMove(init_cube, max_sideways):
+    current_cube = init_cube
+    current_value = objFunc(init_cube)
+    neighbor_value = current_value
+    
+    count_iter = 0
+    sideways_count = 0
+    
+    cubes = [current_cube]
+    values = [current_value]
 
-    while best_value <= current_value:  
+    while neighbor_value >= current_value and sideways_count <= max_sideways:  
+        count_iter += 1
         neighbors, neighbors_value = GenerateNeighbor(current_cube, 5)
         best_neighbor = neighbors[np.argmax(neighbors_value)]
-        best_value = max(neighbors_value)
+        neighbor_value = max(neighbors_value)
         
-        if best_value <= current_value:
+        if neighbor_value >= current_value:
             current_cube = best_neighbor
-            current_value = best_value
+            current_value = neighbor_value
+            if neighbors_value == current_value:
+                sideways_count += 1
 
-    return current_cube, current_value
-
-HillClimbingWithSidewaysMove()
+    return cubes, values, count_iter
