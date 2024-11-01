@@ -13,16 +13,17 @@ def HillClimbingWithSidewaysMove(init_cube, max_sideways):
     cubes = [current_cube]
     values = [current_value]
 
-    while neighbor_value >= current_value and sideways_count <= max_sideways:  
+    while neighbor_value >= current_value and sideways_count < max_sideways:
         count_iter += 1
         neighbors, neighbors_value = GenerateNeighbor(current_cube, 5)
         best_neighbor = neighbors[np.argmax(neighbors_value)]
         neighbor_value = max(neighbors_value)
         
         if neighbor_value >= current_value:
+            if neighbor_value == current_value:
+                sideways_count += 1
             current_cube = best_neighbor
             current_value = neighbor_value
-            if neighbors_value == current_value:
-                sideways_count += 1
+        print("Current val: ", current_value , "  |  Neighbor Val: ", neighbor_value, "  |  Sideways Count: ", sideways_count)
 
     return cubes, values, count_iter

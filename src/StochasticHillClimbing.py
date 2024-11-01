@@ -23,15 +23,12 @@ def StochasticHillClimbing(init_cube, max_iter):
         random_neighbor[z1, x1, y1], random_neighbor[z2, x2, y2] = random_neighbor[z2, x2, y2], random_neighbor[z1, x1, y1]
         random_value = objFunc(random_neighbor)
 
-        values = np.append(values, random_value)
-        cubes = np.append(cubes, random_neighbor)
-
         if random_value > current_value:
             current_cube = random_neighbor
             current_value = random_value
         print("Val:", current_value)
         
-        # values = np.append(values, current_value)
-        # cubes = np.append(cubes, current_cube)
+        values = np.append(values, current_value)
+        cubes = np.append(cubes, current_cube)
         
     return cubes.tolist(), values.tolist(), iter

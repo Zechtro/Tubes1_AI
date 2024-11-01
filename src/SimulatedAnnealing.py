@@ -35,9 +35,6 @@ def SimulatedAnnealing(init_cube, initial_temperature=1000, cooling_rate = 0.9, 
         random_value = objFunc(random_neighbor)
         deltaE = random_value - current_value
         
-        cubes.append(random_neighbor)
-        values.append(random_value)
-
         if deltaE > 0:
             current_cube = random_neighbor
             current_value = random_value
@@ -49,6 +46,8 @@ def SimulatedAnnealing(init_cube, initial_temperature=1000, cooling_rate = 0.9, 
                 current_cube = random_neighbor
                 current_value = random_value
         
+        cubes.append(current_cube)
+        values.append(current_value)
         # print("curr val", current_value)
         # print("T", T)
         

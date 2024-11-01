@@ -50,7 +50,7 @@ iterationPerRestart_tiap_percobaan = []
 restart_tiap_percobaan = []
 for cube in init_cubes:
     start_time = time.perf_counter()
-    cubes, values, iterations, restarts = StochasticHillClimbing(cube, param_iteration)
+    cubes, values, iterations, restarts = RandomRestartHillClimbing(cube, param_max_restart)
     end_time = time.perf_counter()
     sum_time += (end_time-start_time)
     
