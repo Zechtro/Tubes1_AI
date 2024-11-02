@@ -194,5 +194,8 @@ if algorithm == 4 :
   start_time = time.time()
   current_max_fit, values, count_iter = genetic(1000)
   end_time = time.time()
-  print(f'Value {values_old[-1]}')
+  print(f'Value {values[-1]}')
   print(f'Execution Time: {end_time - start_time:.4f} seconds')
+  
+#  =================================================================================================================================
+# Stochastic Algorithm Test ===============================================================================================

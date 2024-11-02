@@ -80,6 +80,7 @@ def SimulatedAnnealingCube(init_cube, initial_temperature=1000, cooling_rate=0.9
         temp = random_neighbor.get_value(a, b, c)
         random_neighbor.insert_value(a, b, c, random_neighbor.get_value(i, j, k))
         random_neighbor.insert_value(i, j, k, temp)
+        random_neighbor.calculate_state_value()
 
         random_value = random_neighbor.state_value
         deltaE = random_value - current_value

@@ -30,6 +30,8 @@ class Cube:
 
     def insert_value(self, x, y, z, value):
         self.array[self.to_index(x, y, z)] = value
+    
+    def calculate_state_value(self):
         self.state_value = objective_function(self)
 
     def get_value(self, x, y, z):
