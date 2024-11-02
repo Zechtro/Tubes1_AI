@@ -6,6 +6,7 @@ from SteepestAscentHillClimbing import SteepestAscentHillClimbing, SteepestAscen
 from RandomRestartHillClimbing import RandomRestartHillClimbing, RandomRestartHillClimbingCube
 from SimulatedAnnealing import SimulatedAnnealing, SimulatedAnnealingCube
 from GeneticAlgorithm import genetic
+from StochasticHillClimbing import StochasticHillClimbing, StochasticHillClimbingCube
 import time
 
 def to_3d_array(cube_1d, x_size=5, y_size=5, z_size=5):
@@ -86,12 +87,13 @@ test_cube_3d = cubes[cube_version]
 test_cube_1d = cubes_flatten[cube_version]
   
 # Pick algorithm
-algorithm = 3
+algorithm = 5
     # 0 = Hill Climbing sideways
     # 1 = Hill Climbing steepest ascent
     # 2 = Hill Climbing random restart
     # 3 = Simulated Annealing
     # 4 = Genetic Algorithm
+    # 5 = Stochastic Hill Climbing Algorithm
 
 # Note : The results are done with init_cube1
 
@@ -171,8 +173,6 @@ if algorithm == 3 :
   print(f'Value {values_new[-1]}')
   print(f'Execution Time (New Code): {end_time - start_time:.4f} seconds')
   # Result:
-  # Value 35
-  # Execution Time (New Code): 2.3880 seconds
   
   print('Old code test Simulated Annealing')
   start_time = time.time()
@@ -181,11 +181,7 @@ if algorithm == 3 :
   print(f'Value {values_old[-1]}')
   print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
   # Result : 
-  # Value -81
-  # Execution Time (Old Code): 2.1983 seconds
   
-  
-
 #  =================================================================================================================================
 # Genetic Algorithm Test ===============================================================================================
 
@@ -199,3 +195,25 @@ if algorithm == 4 :
   
 #  =================================================================================================================================
 # Stochastic Algorithm Test ===============================================================================================
+
+if algorithm == 5 :
+  print('New code test Stochastic Hill Climbing')
+  start_time = time.time()
+  cubes_new, values_new, iter_new = StochasticHillClimbingCube(test_cube_1d, 1000)
+  end_time = time.time()
+  print(f'Value {values_new[-1]}')
+  print(f'Execution Time (New Code): {end_time - start_time:.4f} seconds')
+  # Result:
+  # Value 20
+  # Execution Time (New Code): 0.4083 seconds
+    
+  print('Old code test Stochastic Hill Climbing')
+  start_time = time.time()
+  cubes_old, values_old, iter_old = StochasticHillClimbing(test_cube_3d, 1000)
+  end_time = time.time()
+  print(f'Value {values_old[-1]}')
+  print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
+  # Result : 
+  # Value -96
+  # Execution Time (Old Code): 0.4848 seconds
+  
