@@ -11,7 +11,8 @@ def SteepestAscentHillClimbing(init_cube):
     values = [current_value]
     count_iter = 0
 
-    while True:
+    while True: 
+        print("Current val: ", current_value)
         count_iter += 1
         neighbors, neighbors_value = GenerateNeighbor(current_cube, 5)
         best_neighbor = neighbors[np.argmax(neighbors_value)]
@@ -26,6 +27,7 @@ def SteepestAscentHillClimbing(init_cube):
         cubes.append(current_cube)
         values.append(current_value)
 
+
     return cubes, values, count_iter
   
 def SteepestAscentHillClimbingCube(init_cube):
@@ -36,6 +38,7 @@ def SteepestAscentHillClimbingCube(init_cube):
     count_iter = 0
 
     while True:
+        print("Current val: ", current_value)
         count_iter += 1
         neighbors = generate_successor(current_cube.array)
         neighbors_value = [cube.state_value for cube in neighbors]
@@ -50,6 +53,7 @@ def SteepestAscentHillClimbingCube(init_cube):
         
         cubes.append(current_cube)
         values.append(current_value)
+
 
     return cubes, values, count_it
   

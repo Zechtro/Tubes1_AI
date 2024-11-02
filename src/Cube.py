@@ -30,6 +30,7 @@ class Cube:
 
     def insert_value(self, x, y, z, value):
         self.array[self.to_index(x, y, z)] = value
+        self.state_value = objective_function(self)
 
     def get_value(self, x, y, z):
         return self.array[self.to_index(x, y, z)]
@@ -140,6 +141,10 @@ def generate_successor(curr_cube_arr):
             successors.append(Cube(5, 5, 5, False, new_arr))
     return successors
 
+def random_1d_array(n):
+  numbers = list(range(1, n**3 + 1))
+  random.shuffle(numbers)
+  return numbers
 
 def objective_function(cube):
     arr = []
