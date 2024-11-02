@@ -1,6 +1,10 @@
 from ObjFunct import objFunc
 from Cube import Cube
 import numpy as np
+from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMove, HillClimbingWithSidewaysMoveCube
+from SteepestAscentHillClimbing import SteepestAscentHillClimbing, SteepestAscentHillClimbingCube
+from RandomRestartHillClimbing import RandomRestartHillClimbing, RandomRestartHillClimbingCube
+import time
 
 def to_3d_array(cube_1d, x_size=5, y_size=5, z_size=5):
     cube_3d = []
@@ -63,20 +67,57 @@ magic_cube_3d_perfect = [
         [36, 110, 46, 22, 101]
     ]
 ]
-cubes = [magic_cube_3d_perfect]
+cubes = [init_cube1, init_cube2, init_cube3, magic_cube_3d_perfect]
+cubes_flatten = [np.array(init_cube1).flatten().tolist(),
+                np.array(init_cube2).flatten().tolist(),
+                np.array(init_cube3).flatten().tolist(),
+                np.array(magic_cube_3d_perfect).flatten().tolist()]
+
+# Test, Pick cube and algorithm as you see fit
+cube_version = 0
+  # 0 = init_cube1, 1 = init_cube2, 2 = init_cube3, 3 = magic_cube_3d_perfect
+  
+test_cube_3d = cubes[cube_version]
+test_cube_1d = cubes_flatten[cube_version]
+  
+
+algorithm = 0
+# 0 = Hill Climbing sideways
+# 1 = Hill Climbing steepest ascent
+# 2 = Hill Climbing random restart
+
+# Note : The results are done with init_cube1
+
+# Hill climbing Sideways Move Test ===============================================================================================
+if algorithm == 0:
+  
+  print('New code test hill climbing sideways')
+  start_time = time.time()
+  HillClimbingWithSidewaysMoveCube(test_cube_1d, 100)
+  end_time = time.time()
+  print(f'Execution Time (New Code): {end_time - start_time:.4f} seconds')
+  # Result: Current val: 45 | Neighbor Val: 45 | Sideways Count: 100, Execution Time (New Code): 108.7507 seconds
+  
+  print('Old code test hill climbing sideways')
+  start_time = time.time()
+  cubes, values, count_iter = HillClimbingWithSidewaysMove(test_cube_3d, 100)
+  end_time = time.time()
+  print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
+  # Result = 
 
 
-# Using previous objective function
-print('Old objective function')
-for index, cube in enumerate(cubes):
-    print(f"Value cube {index + 1} : {objFunc(cube)}")
-
-print()
-print()
-print('New objective function')
-# Using new objective function
-cubes_obj = [
-    Cube(5, 5, 5, False, np.array(magic_cube_3d_perfect).flatten().tolist()),
-
-]
-print(f"Value cube 1: {cubes_obj[0].state_value}")
+# Hill climbing Steepest Ascent Test ===============================================================================================
+if algorithm == 1 :
+  print('New code test hill climbing steepest ascent')
+  start_time = time.time()
+  SteepestAscentHillClimbingCube(test_cube_1d)
+  end_time = time.time()
+  print(f'Execution Time (New Code): {end_time - start_time:.4f} seconds')
+  # Result:
+  
+  print('Old code test hill climbing steepest ascent')
+  start_time = time.time()
+  cubes, values, count_iter = SteepestAscentHillClimbing(test_cube_3d)
+  end_time = time.time()
+  print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
+  # Result : 

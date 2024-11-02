@@ -128,9 +128,9 @@ def objective_function_view(cube):
         + check_space_diagonals(cube)
     )
     print(arr)
-    
-def generate_successor(curr_cube_arr):
 
+
+def generate_successor(curr_cube_arr):
     successors = []
     n = len(curr_cube_arr)
     for i in range(n):
@@ -139,7 +139,6 @@ def generate_successor(curr_cube_arr):
             new_arr[i], new_arr[j] = new_arr[j], new_arr[i]
             successors.append(Cube(5, 5, 5, False, new_arr))
     return successors
-
 
 
 def objective_function(cube):
