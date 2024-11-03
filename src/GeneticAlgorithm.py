@@ -1,6 +1,5 @@
-
 import random
-import multiprocessing as mp
+import heapq
 import Cube as c
 
 def mutate(child, mutation_rate=0.01):
@@ -8,6 +7,8 @@ def mutate(child, mutation_rate=0.01):
     if random.random() < mutation_rate:
         i, j = random.sample(range(size), 2)
         child.array[i], child.array[j] = child.array[j], child.array[i]
+    child.calculate_state_value()
+    # print('mutate')
     return child
 
 def crossover(parent1, parent2):
@@ -17,6 +18,7 @@ def crossover(parent1, parent2):
     start, end = sorted(random.sample(range(size), 2))
     child1_array[start : end + 1] = parent1.array[start : end + 1]
     child2_array[start : end + 1] = parent2.array[start : end + 1]
+
     def fill_remaining(child, parent):
         current_pos = (end + 1) % size
         for gene in parent:
@@ -41,46 +43,32 @@ def roulette_wheel_selection(population):
         if current > pick:
             return individual
 
-def create_child_task(args):
-    parent1, parent2, mutation_rate = args
-    child1, child2 = crossover(parent1, parent2)
-    # Apply mutation to both children
-    child1 = mutate(child1, mutation_rate)
-    child2 = mutate(child2, mutation_rate)
-    return child1, child2
-
-# N : Total Population
-# max_generations : Total maximum Iteration
-
-def genetic(N=100, max_generations=1000, mutation_rate=0.01, stagnation_limit=1000, pool=None):
+def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_limit=100):
     population = [c.Cube(5, 5, 5, True) for _ in range(N)]
-    population = sorted(population, key=lambda x: x.state_value)
-    values = []
-    count_iter = 0
-    
-    current_max_fit = population[-1]
-    values.append(current_max_fit.state_value)
+    current_max_fit = max(population, key=lambda x: x.state_value)
+    values = [current_max_fit.state_value]
     no_improvement_count = 0
-
+    mutation_rate = initial_mutation_rate
+    elite_size = int(0.05 * N)
+    cubes = []
     for generation in range(max_generations):
-        count_iter += 1
-        new_population = []
-        elite_size = int(0.15 * N)
-        new_population.extend(population[-elite_size:])
+        new_population = heapq.nlargest(elite_size, population, key=lambda x: x.state_value)
+        
 
-        tasks = [(roulette_wheel_selection(population), roulette_wheel_selection(population), mutation_rate) for _ in range((N - elite_size) // 2)]
-
-        if pool:
-            children_pairs = pool.map(create_child_task, tasks)
+        if no_improvement_count > stagnation_limit / 2:
+            mutation_rate = min(0.3, mutation_rate * 1.2)
         else:
-            children_pairs = [create_child_task(task) for task in tasks]
+            mutation_rate = initial_mutation_rate
 
-        for child1, child2 in children_pairs:
-            if child1 is not None and child2 is not None:
-                new_population.extend([child1, child2])
+        while len(new_population) < N:
+            parent1, parent2 = roulette_wheel_selection(population), roulette_wheel_selection(population)
+            child1, child2 = crossover(parent1, parent2)
+            new_population.extend([mutate(child1, mutation_rate), mutate(child2, mutation_rate)])
 
-        new_population = sorted(new_population, key=lambda x: x.state_value)[:N]
-        best_child = new_population[-1]
+        population = heapq.nlargest(N, new_population, key=lambda x: x.state_value)
+        best_child = population[0]
+        print(f"largest {population[0].state_value}")
+        print(f"smallest {population[-1].state_value}")
 
         if best_child.state_value > current_max_fit.state_value:
             current_max_fit = best_child
@@ -90,25 +78,15 @@ def genetic(N=100, max_generations=1000, mutation_rate=0.01, stagnation_limit=10
 
         print(f"Generation {generation}: Current max fitness = {current_max_fit.state_value}")
 
-        if current_max_fit.state_value == 109:
-            print("Solution found!")
-            break
         if no_improvement_count >= stagnation_limit:
-            print("No improvement for several generations, stopping early.")
-            break
+            print("STAGNATION ALERT !!!")
+            random_individuals = [c.Cube(5, 5, 5, True) for _ in range(int(0.3 * N))]
+            population = population[:int(0.7 * N)] + random_individuals
+            no_improvement_count = 0
 
-        population = new_population
         values.append(current_max_fit.state_value)
+        cubes.append(current_max_fit)
 
     print("Final solution:")
     current_max_fit.print_cube()
-    return current_max_fit, values, count_iter
-
-# Only create the pool and run the function if this file is executed directly
-if __name__ == "__main__":
-    pool = mp.Pool(mp.cpu_count())
-    try:
-        genetic(1000, pool=pool)
-    finally:
-        pool.close()
-        pool.join()
+    return current_max_fit, values, cubes, generation + 1

@@ -87,7 +87,7 @@ test_cube_3d = cubes[cube_version]
 test_cube_1d = cubes_flatten[cube_version]
   
 # Pick algorithm
-algorithm = 5
+algorithm = 4
     # 0 = Hill Climbing sideways
     # 1 = Hill Climbing steepest ascent
     # 2 = Hill Climbing random restart
@@ -188,7 +188,7 @@ if algorithm == 3 :
 if algorithm == 4 :
   print('Genetic Algorithm')
   start_time = time.time()
-  current_max_fit, values, count_iter = genetic(1000)
+  current_max_fit, values, cubes, count_iter = genetic(400,3000)
   end_time = time.time()
   print(f'Value {values[-1]}')
   print(f'Execution Time: {end_time - start_time:.4f} seconds')
