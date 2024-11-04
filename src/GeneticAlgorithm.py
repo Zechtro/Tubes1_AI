@@ -103,7 +103,4 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
             cubes.append(current_max_fit)
             avg_values.append(sum(ind.state_value for ind in population) / N)
 
-        print("Final solution:")
-        current_max_fit.print_cube()
-
     return current_max_fit, values, avg_values, cubes, generation + 1

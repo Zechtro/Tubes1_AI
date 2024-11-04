@@ -5,39 +5,55 @@ from RandomRestartHillClimbing import RandomRestartHillClimbingCube
 from SimulatedAnnealing import SimulatedAnnealingCube
 from SteepestAscentHillClimbing import SteepestAscentHillClimbingCube
 from StochasticHillClimbing import StochasticHillClimbingCube
-from Cube import Cube
+from Cube import Cube, random_1d_array
+import os
+import json
 
+def generate_json(cubes):
+    cube_arrays = [cube.array for cube in cubes]
+    json_file_path = os.path.join(os.path.dirname(__file__), "../state.json")
+    with open(json_file_path, "w") as json_file:
+        json.dump(cube_arrays, json_file, indent=4)
+    
 def genetic_algorithm(N, max_generations):
     print(f"Running Genetic Algorithm with N={N}, max_generations={max_generations}")
     current_max_fit, values, avg_values, cubes, generation = genetic(N=N, max_generations=max_generations)
-    print("Final solution:")
+    
+    print("Initial state : ")
+    cubes[0].print_cube()
+    print(f"Initial state value : {values[0]}")
+
+    print("Final state:")
     current_max_fit.print_cube()
+    print(f"Final state value : {values[-1]}")
+
 
     return "Genetic Algorithm Result"
 
 def hill_climbing_with_sideways(max_sideways):
     print(f"Running Hill Climbing with Sideways Move, max_sideways={max_sideways}")
-    cubes, values, count_iter = HillClimbingWithSidewaysMoveCube(Cube(5,5,5,True), max_sideways=max_sideways)
+    cubes, values, count_iter = HillClimbingWithSidewaysMoveCube(random_1d_array(5), max_sideways=max_sideways)
     return "Hill Climbing with Sideways Result"
 
 def random_restart_hill_climbing(max_restart):
     print(f"Running Random Restart Hill Climbing, max_restart={max_restart}")
-    cubes_per_restart, values_per_restart, iteration_per_restart, restart = RandomRestartHillClimbingCube(Cube(5,5,5,True), max_restart=max_restart)
+    cubes_per_restart, values_per_restart, iteration_per_restart, restart = RandomRestartHillClimbingCube(random_1d_array(5), max_restart=max_restart)
     return "Random Restart Hill Climbing Result"
 
 def simulated_annealing():
     print("Running Simulated Annealing")
-    cubes, values, count_iter, e_probs, count_stuck = SimulatedAnnealingCube(Cube(5,5,5,True), 1000,0.99)
+    cubes, values, count_iter, e_probs, count_stuck = SimulatedAnnealingCube(random_1d_array(5), 1000,0.99)
+    generate_json(cubes)
     return "Simulated Annealing Result"
 
 def steepest_ascent_hill_climbing():
     print("Running Steepest Ascent Hill Climbing")
-    cubes, values, count_iter = SteepestAscentHillClimbingCube(Cube(5,5,5,True))
+    cubes, values, count_iter = SteepestAscentHillClimbingCube(random_1d_array(5))
     return "Steepest Ascent Hill Climbing Result"
 
 def stochastic_hill_climbing(max_iterations):
     print("Running Stochastic Hill Climbing")
-    cubes, values, iter = StochasticHillClimbingCube(Cube(5,5,5,True), max_iter=max_iterations )
+    cubes, values, iter = StochasticHillClimbingCube(random_1d_array(5), max_iter=max_iterations )
     return "Stochastic Hill Climbing Result"
 
 # Main function for the menu
