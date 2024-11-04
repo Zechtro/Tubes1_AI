@@ -1,12 +1,11 @@
-from ObjFunct import objFunc
 from Cube import Cube
 import numpy as np
-from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMove, HillClimbingWithSidewaysMoveCube
-from SteepestAscentHillClimbing import SteepestAscentHillClimbing, SteepestAscentHillClimbingCube
-from RandomRestartHillClimbing import RandomRestartHillClimbing, RandomRestartHillClimbingCube
-from SimulatedAnnealing import SimulatedAnnealing, SimulatedAnnealingCube
+from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMoveCube
+from SteepestAscentHillClimbing import SteepestAscentHillClimbingCube
+from RandomRestartHillClimbing import RandomRestartHillClimbingCube
+from SimulatedAnnealing import SimulatedAnnealingCube
 from GeneticAlgorithm import genetic
-from StochasticHillClimbing import StochasticHillClimbing, StochasticHillClimbingCube
+from StochasticHillClimbing import StochasticHillClimbingCube
 import time
 
 def to_3d_array(cube_1d, x_size=5, y_size=5, z_size=5):
@@ -110,16 +109,7 @@ if __name__ == "__main__":
     # Result: 
     # Current val: 45 | Neighbor Val: 45 | Sideways Count: 100
     # Execution Time (New Code): 108.7507 seconds
-    
-    print('Old code test hill climbing sideways')
-    start_time = time.time()
-    cubes_old, values_old, count_iter_old = HillClimbingWithSidewaysMove(test_cube_3d, 100)
-    end_time = time.time()
-    print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
-    # Result:
-    # Current val:  -75   |  Neighbor Val:  -75   |  Sideways Count:  100
-    # Execution Time (Old Code): 2094.5024 seconds
-
+  
   #  =================================================================================================================================
   # Hill climbing Steepest Ascent Test ===============================================================================================
 
@@ -132,15 +122,6 @@ if __name__ == "__main__":
     # Result:
     # Current val:  44
     # Execution Time (New Code): 23.9999 second
-    
-    print('Old code test hill climbing steepest ascent')
-    start_time = time.time()
-    cubes_old, values_old, count_iter_old = SteepestAscentHillClimbing(test_cube_3d)
-    end_time = time.time()
-    print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
-    # Result :
-    # Current val:  -76
-    # Execution Time (Old Code): 351.5430 seconds
 
   #  =================================================================================================================================
   # Hill climbing Random Restart Test ===============================================================================================
@@ -154,15 +135,6 @@ if __name__ == "__main__":
     # Result: 
     # Execution Time (New Code): 99.3183 seconds
     
-    
-    print('Old code test hill climbing steepest ascent')
-    start_time = time.time()
-    cubes_per_restart_old, values_per_restart_old, iteration_per_restart_old, restart_old = RandomRestartHillClimbing(test_cube_3d, 3)
-    end_time = time.time()
-    print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
-    # Result : 
-    # Too long....
-
   #  =================================================================================================================================
   # Simulated Annealing Test  ===============================================================================================
 
@@ -175,13 +147,6 @@ if __name__ == "__main__":
     print(f'Execution Time (New Code): {end_time - start_time:.4f} seconds')
     # Result:
     
-    print('Old code test Simulated Annealing')
-    start_time = time.time()
-    cubes_old, values_old, count_iter_old, e_probs_old, count_stuck_old = SimulatedAnnealing(test_cube_3d, 10000, 0.99)
-    end_time = time.time()
-    print(f'Value {values_old[-1]}')
-    print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
-    # Result : 
     
   #  =================================================================================================================================
   # Genetic Algorithm Test ===============================================================================================
@@ -207,14 +172,4 @@ if __name__ == "__main__":
     # Result:
     # Value 20
     # Execution Time (New Code): 0.4083 seconds
-      
-    print('Old code test Stochastic Hill Climbing')
-    start_time = time.time()
-    cubes_old, values_old, iter_old = StochasticHillClimbing(test_cube_3d, 1000)
-    end_time = time.time()
-    print(f'Value {values_old[-1]}')
-    print(f'Execution Time (Old Code): {end_time - start_time:.4f} seconds')
-    # Result : 
-    # Value -96
-    # Execution Time (Old Code): 0.4848 seconds
     
