@@ -188,7 +188,7 @@ if algorithm == 3 :
 if algorithm == 4 :
   print('Genetic Algorithm')
   start_time = time.time()
-  current_max_fit, values, cubes, count_iter = genetic(400,3000)
+  current_max_fit, values, cubes, count_iter = genetic(900,3000)
   end_time = time.time()
   print(f'Value {values[-1]}')
   print(f'Execution Time: {end_time - start_time:.4f} seconds')

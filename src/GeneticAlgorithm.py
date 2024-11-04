@@ -63,7 +63,11 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
         while len(new_population) < N:
             parent1, parent2 = roulette_wheel_selection(population), roulette_wheel_selection(population)
             child1, child2 = crossover(parent1, parent2)
-            new_population.extend([mutate(child1, mutation_rate), mutate(child2, mutation_rate)])
+            child1 = mutate(child1, mutation_rate)
+            child2 = mutate(child2, mutation_rate)
+            best_child = child1 if child1.state_value > child2.state_value else child2
+            
+            new_population.append(best_child)
 
         population = heapq.nlargest(N, new_population, key=lambda x: x.state_value)
         best_child = population[0]
@@ -80,6 +84,13 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
 
         if no_improvement_count >= stagnation_limit:
             print("STAGNATION ALERT !!!")
+            similarity_count = 0
+            first_five_arrays = [ind.array for ind in population[:5]]
+            for i in range(4):
+                for j in range(i + 1, 5):
+                    if first_five_arrays[i] == first_five_arrays[j]:
+                        similarity_count += 1
+            
             random_individuals = [c.Cube(5, 5, 5, True) for _ in range(int(0.3 * N))]
             population = population[:int(0.7 * N)] + random_individuals
             no_improvement_count = 0
