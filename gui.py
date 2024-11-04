@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
-from flet import Container, Slider, ElevatedButton, Row, Column, Image, Dropdown, dropdown
+from flet import Container, Slider, ElevatedButton, Row, Column, Image, Dropdown, dropdown, alignment
 import base64
 import threading
 import time
@@ -12,30 +12,27 @@ plt.switch_backend("Agg")
 
 matrix_3d = []
 global_min, global_max = None, None
-current_layer = 0
 playback_speed = 1
 is_playing = False
 play_thread = None
 iter = 0
+total_iter = 0
 
 def create_dummy():
-    list_of_cubes = []
     for i in range(10):
         cube = np.random.randint(0, 100, size=(5, 5, 5))  
         matrix_3d.append(cube)
 
-def load_cube(cube):
-    global matrix_3d, global_min, global_max
-    matrix_3d = cube
-    global_min, global_max = matrix_3d.min(), matrix_3d.max()
-    save_cube_to_file(cube) 
-
-def save_cube_to_file(cube):
-    with open("current_cube.txt", "w") as f:
-        for i in range(cube.shape[0]):
-            layer = cube[i, :, :]
-            np.savetxt(f, layer, fmt='%d', delimiter=' ')
-            f.write("\n")
+def save_cube_to_file():
+    global matrix_3d
+    with open("state.txt", "w") as f:
+        for iteration, cube in enumerate(matrix_3d):
+            f.write(f"Iteration {iteration + 1} \n\n")
+            for i in range(cube.shape[0]):
+                layer = cube[i, :, :]
+                f.write(f"Layer {i + 1}\n")
+                np.savetxt(f, layer, fmt='%d', delimiter=' ')
+                f.write("\n")
 
 def update_plot():
     global iter, matrix_3d, global_min, global_max
@@ -74,7 +71,6 @@ def play_loop(page):
         progress_slider.value = iter
         plot_image.src_base64 = update_plot()
         page.update()
-        print(1 / playback_speed)
         time.sleep(1 / playback_speed) 
 
 def on_play_pause_clicked(e):
@@ -97,7 +93,6 @@ def update_image(page):
 def on_slider_change(e):
     global iter 
     iter = int(e.control.value)
-    print("iter: ", iter)
     progress_slider.value = iter
     plot_image.src_base64 = update_plot()
     e.page.update()
@@ -108,12 +103,14 @@ def on_playback_speed_change(e):
     print("Playback Speed:", playback_speed)
 
 def main(page: ft.Page):
+    global total_iter
+    total_iter = 10 #ntar diganti aja
     create_dummy() # Ini ntar diganti sama list of cube yg asli
 
-    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked)
+    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=40)
     global progress_slider
 
-    progress_slider = Slider(min=0, max=len(matrix_3d) - 1, divisions=len(matrix_3d) - 1, on_change=on_slider_change)
+    progress_slider = Slider(min=0, max=len(matrix_3d) - 1, divisions=len(matrix_3d) - 1, on_change=on_slider_change, height=40)
 
     playback_speed_dropdown = Dropdown(
         label="Playback Speed",
@@ -127,19 +124,29 @@ def main(page: ft.Page):
             dropdown.Option("1.5"),
             dropdown.Option("2")
         ],
-        on_change=on_playback_speed_change
+        on_change=on_playback_speed_change,
+        width=200, height=40
     )
 
-    load_button = ElevatedButton(text="Load File", on_click=lambda e: load_cube(matrix_3d[0]))
+    load_button = ElevatedButton(text="Load File", on_click=lambda e: save_cube_to_file())
 
     global plot_image
-    plot_image = Image(src_base64=update_plot(), width=600, height=400)
+    plot_image = Image(src_base64=update_plot(), width=700, height=500)
 
-    page.add(Column([
-        Row([load_button, play_pause_button]),
-        progress_slider,
-        playback_speed_dropdown,
-        plot_image
-    ]))
+
+
+    page.add(
+        Column(height=20),
+        Column(
+            [
+                Row([load_button, play_pause_button, playback_speed_dropdown], alignment="center"),
+                progress_slider,
+                plot_image
+            ],
+            alignment="center",
+            horizontal_alignment="center"
+        )
+    )
+
 
 ft.app(target=main)
