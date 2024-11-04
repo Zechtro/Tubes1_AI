@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
-from flet import Container, Slider, ElevatedButton, Row, Column, Image
+from flet import Container, Slider, ElevatedButton, Row, Column, Image, Dropdown, dropdown
 import base64
 import threading
 import time
@@ -19,6 +19,7 @@ play_thread = None
 iter = 0
 
 def create_dummy():
+    list_of_cubes = []
     for i in range(10):
         cube = np.random.randint(0, 100, size=(5, 5, 5))  
         matrix_3d.append(cube)
@@ -67,12 +68,13 @@ def update_plot():
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 def play_loop(page):
-    global current_layer, is_playing
+    global iter, is_playing
     while is_playing:
-        current_layer = (current_layer + 1) % len(matrix_3d)
-        progress_slider.value = current_layer
+        iter = (iter + 1) % len(matrix_3d)
+        progress_slider.value = iter
         plot_image.src_base64 = update_plot()
         page.update()
+        print(1 / playback_speed)
         time.sleep(1 / playback_speed) 
 
 def on_play_pause_clicked(e):
@@ -93,20 +95,40 @@ def update_image(page):
     page.update()
 
 def on_slider_change(e):
-    global iter
+    global iter 
     iter = int(e.control.value)
     print("iter: ", iter)
     progress_slider.value = iter
     plot_image.src_base64 = update_plot()
     e.page.update()
 
+def on_playback_speed_change(e):
+    global playback_speed
+    playback_speed = float(e.control.value)
+    print("Playback Speed:", playback_speed)
+
 def main(page: ft.Page):
-    create_dummy() 
+    create_dummy() # Ini ntar diganti sama list of cube yg asli
 
     play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked)
     global progress_slider
 
     progress_slider = Slider(min=0, max=len(matrix_3d) - 1, divisions=len(matrix_3d) - 1, on_change=on_slider_change)
+
+    playback_speed_dropdown = Dropdown(
+        label="Playback Speed",
+        value="1",
+        options=[
+            dropdown.Option("0.25"),
+            dropdown.Option("0.5"),
+            dropdown.Option("0.75"),
+            dropdown.Option("1"),
+            dropdown.Option("1.25"),
+            dropdown.Option("1.5"),
+            dropdown.Option("2")
+        ],
+        on_change=on_playback_speed_change
+    )
 
     load_button = ElevatedButton(text="Load File", on_click=lambda e: load_cube(matrix_3d[0]))
 
@@ -116,6 +138,7 @@ def main(page: ft.Page):
     page.add(Column([
         Row([load_button, play_pause_button]),
         progress_slider,
+        playback_speed_dropdown,
         plot_image
     ]))
 
