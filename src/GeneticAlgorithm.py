@@ -60,11 +60,11 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
     population = [c.Cube(5, 5, 5, True) for _ in range(N)]
     current_max_fit = max(population, key=lambda x: x.state_value)
     values = [current_max_fit.state_value]
+    avg_values = [sum(ind.state_value for ind in population) / N]
     no_improvement_count = 0
     mutation_rate = initial_mutation_rate
     elite_size = int(0.05 * N)
     cubes = []
-
     with mp.Pool(mp.cpu_count()) as pool:
         for generation in range(max_generations):
             new_population = heapq.nlargest(elite_size, population, key=lambda x: x.state_value)
@@ -74,13 +74,14 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
 
             tasks = [
                 (roulette_wheel_selection(population), roulette_wheel_selection(population), mutation_rate)
-                for _ in range((N - elite_size) // 2)
+                for _ in range((N - elite_size))
             ]
 
             children = pool.map(create_child_task, tasks)
             new_population.extend(children)
 
             population = heapq.nlargest(N, new_population, key=lambda x: x.state_value)
+
             best_child = population[0]
 
             if best_child.state_value > current_max_fit.state_value:
@@ -100,8 +101,9 @@ def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_
 
             values.append(current_max_fit.state_value)
             cubes.append(current_max_fit)
+            avg_values.append(sum(ind.state_value for ind in population) / N)
 
         print("Final solution:")
         current_max_fit.print_cube()
 
-    return current_max_fit, values, cubes, generation + 1
+    return current_max_fit, values, avg_values, cubes, generation + 1

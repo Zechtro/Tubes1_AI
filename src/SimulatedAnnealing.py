@@ -41,9 +41,12 @@ def SimulatedAnnealingCube(init_cube, initial_temperature=1000, cooling_rate=0.9
         if deltaE > 0:
             current_cube = random_neighbor
             current_value = random_value
+            e_probs[count_iter] = 1
         else:
             if deltaE < 0:
                 e_probs[count_iter] = math.exp(deltaE / T)
+            else :
+                e_probs[count_iter] = 1
             if random.random() < math.exp(deltaE / T):
                 count_stuck += 1
                 current_cube = random_neighbor
