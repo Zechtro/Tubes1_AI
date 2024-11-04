@@ -87,7 +87,7 @@ if __name__ == "__main__":
   test_cube_1d = cubes_flatten[cube_version]
     
   # Pick algorithm
-  algorithm = 4
+  algorithm = 2
       # 0 = Hill Climbing sideways
       # 1 = Hill Climbing steepest ascent
       # 2 = Hill Climbing random restart
