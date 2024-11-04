@@ -10,37 +10,38 @@ import time
 
 plt.switch_backend("Agg")
 
-matrix_3d = None
+matrix_3d = []
 global_min, global_max = None, None
 current_layer = 0
 playback_speed = 1
 is_playing = False
 play_thread = None
+iter = 0
 
 def create_dummy():
-    list_of_cubes = []
     for i in range(10):
         cube = np.random.randint(0, 100, size=(5, 5, 5))  
-        list_of_cubes.append(cube)
-    return list_of_cubes
+        matrix_3d.append(cube)
 
 def load_cube(cube):
     global matrix_3d, global_min, global_max
     matrix_3d = cube
     global_min, global_max = matrix_3d.min(), matrix_3d.max()
-    save_cube_to_file(cube)  
+    save_cube_to_file(cube) 
 
 def save_cube_to_file(cube):
-    with open("cube.txt", "w") as f:
+    with open("current_cube.txt", "w") as f:
         for i in range(cube.shape[0]):
             layer = cube[i, :, :]
             np.savetxt(f, layer, fmt='%d', delimiter=' ')
-            f.write("\n")  
+            f.write("\n")
 
 def update_plot():
+    global iter, matrix_3d, global_min, global_max
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    cube = matrix_3d[iter]
     for i in range(5):
-        layer = matrix_3d[i, :, :]
+        layer = cube[i, :, :]
         
         row = i // 3
         col = i % 3
@@ -56,7 +57,6 @@ def update_plot():
 
     for j in range(i + 1, 6):
         fig.delaxes(axes.flatten()[j])
-        
     plt.tight_layout()
 
     buf = BytesIO()
@@ -69,7 +69,7 @@ def update_plot():
 def play_loop(page):
     global current_layer, is_playing
     while is_playing:
-        current_layer = (current_layer + 1) % matrix_3d.shape[0]
+        current_layer = (current_layer + 1) % len(matrix_3d)
         progress_slider.value = current_layer
         plot_image.src_base64 = update_plot()
         page.update()
@@ -87,23 +87,28 @@ def on_play_pause_clicked(e):
         if play_thread:
             is_playing = False
 
-def on_progress_bar_changed(e):
-    global current_layer
-    current_layer = int(e.control.value)
-    update_image(e.page)
-
 def update_image(page):
+    create_dummy()
     plot_image.src_base64 = update_plot()
     page.update()
 
+def on_slider_change(e):
+    global iter
+    iter = int(e.control.value)
+    print("iter: ", iter)
+    progress_slider.value = iter
+    plot_image.src_base64 = update_plot()
+    e.page.update()
+
 def main(page: ft.Page):
-    list_of_cubes = create_dummy()
-    load_cube(list_of_cubes[0])
+    create_dummy() 
 
     play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked)
     global progress_slider
-    progress_slider = Slider(min=0, max=matrix_3d.shape[0] - 1, value=0, on_change=on_progress_bar_changed)
-    load_button = ElevatedButton(text="Load File", on_click=lambda e: load_cube(list_of_cubes[0]))
+
+    progress_slider = Slider(min=0, max=len(matrix_3d) - 1, divisions=len(matrix_3d) - 1, on_change=on_slider_change)
+
+    load_button = ElevatedButton(text="Load File", on_click=lambda e: load_cube(matrix_3d[0]))
 
     global plot_image
     plot_image = Image(src_base64=update_plot(), width=600, height=400)
@@ -113,12 +118,5 @@ def main(page: ft.Page):
         progress_slider,
         plot_image
     ]))
-
-    def on_slider_change(e):
-        progress_slider.value = current_layer
-        plot_image.src_base64 = update_plot()
-        page.update()
-    
-    progress_slider.on_change = on_slider_change
 
 ft.app(target=main)
