@@ -172,7 +172,7 @@ def main(page: ft.Page):
 
     page.add(
         file_picker,
-        Column(height=20),
+        Column(height=5),
         Column(
             [
                 Row([upload_button, play_pause_button, playback_speed_dropdown], alignment="center"),

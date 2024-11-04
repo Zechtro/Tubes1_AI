@@ -1,187 +1,106 @@
 import random
-from ObjFunct import *
+import heapq
+import multiprocessing as mp
+import Cube as c
 
-totalRule = 109
+def mutate(child, mutation_rate=0.01):
+    size = len(child.array)
+    if random.random() < mutation_rate:
+        i, j = random.sample(range(size), 2)
+        child.array[i], child.array[j] = child.array[j], child.array[i]
+    child.calculate_state_value()
+    return child
 
-def GeneratePopulation(k=4):
-    population = []
-    fitnessValPopulation = []
-    for _ in range(k):
-        cube = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(5)]
-        initX = random.randint(0,4)
-        initY = random.randint(0,4)
-        initZ = random.randint(0,4)
-        elmt = 1
-        for z in range(5):
-            for x in range(5):
-                for y in range(5):
-                    zIdx = (initZ+z)%5
-                    xIdx = (initX+x)%5
-                    yIdx = (initY+y)%5
-                    cube[zIdx][xIdx][yIdx] = elmt
-                    elmt += 1
-        population.append(cube)
-        valCube = totalRule + objFunc(cube)
-        fitnessValPopulation.append(valCube)
-        
-    return population, fitnessValPopulation
+def crossover(parent1, parent2):
+    size = len(parent1.array)
+    child1_array = [None] * size
+    child2_array = [None] * size
+    start, end = sorted(random.sample(range(size), 2))
+    
+    child1_array[start : end+1] = parent1.array[start : end+1]
+    child2_array[start : end+1] = parent2.array[start : end+1]
 
-def Roulete(fitnessValPopulation):
-    fitnessProb = []
-    sumVal = sum(fitnessValPopulation)
-    print("FitnessValPop:",fitnessValPopulation)
-    for val in fitnessValPopulation:
-        if(sumVal == 0):
-            fitnessProb.append(round(100/len(fitnessValPopulation)))
-        else:
-            fitnessProb.append(round(val*100/sumVal))
+    used1 = set(child1_array[start : end+1])
+    used2 = set(child2_array[start : end+1])
     
-    print("fitness prob:", fitnessProb)
-        
-    wheel = [0 for _ in range(100)]
-    wheelIdx = 0
-    for i in range(len(fitnessProb)):
-        for _ in range(fitnessProb[i]):
-            wheel[wheelIdx%100] = i
-            wheelIdx += 1
-            
-    return wheel
+    # Create remaining values lists
+    remaining1 = [x for x in parent2.array if x not in used1]
+    remaining2 = [x for x in parent1.array if x not in used2]
 
-def RouleteSelect(roulete):
-    randIdx = random.randint(0,99)
-    return roulete[randIdx]
+    idx1 = idx2 = 0
+    for i in range(size):
+        if i < start or i > end:
+            child1_array[i] = remaining1[idx1]
+            child2_array[i] = remaining2[idx2]
+            idx1 += 1
+            idx2 += 1
+    
+    child1 = c.Cube(parent1.x_size, parent1.y_size, parent1.z_size, array=child1_array)
+    child2 = c.Cube(parent2.x_size, parent2.y_size, parent2.z_size, array=child2_array)
+    
+    return child1, child2
 
-def SelectParent(population, fitnessValPopulation):
-    roulete = Roulete(fitnessValPopulation)
-    parent1Idx = RouleteSelect(roulete)
-    parent2Idx = RouleteSelect(roulete)
-    while(parent1Idx == parent2Idx):
-        parent2Idx = RouleteSelect(roulete)
-    return population[parent1Idx], population[parent2Idx]
+def roulette_wheel_selection(population):
+    total_fitness = sum(ind.state_value for ind in population)
+    pick = random.uniform(0, total_fitness)
+    current = 0
+    for individual in population:
+        current += individual.state_value
+        if current > pick:
+            return individual
 
-def Flatten(cube):
-    flattenCube = []
-    for z in range(5):
-        for x in range(5):
-            for y in range(5):
-                flattenCube.append(cube[z][x][y])
-    #             if(x+y <= z):
-    #                 flattenCube.append(cube[z][x][y])
-    # for z in range(5):
-    #     for x in range(5):
-    #         for y in range(5):
-    #             if(x+y > z):
-    #                 flattenCube.append(cube[z][x][y])
-    return flattenCube
+def create_child_task(args):
+    parent1, parent2, mutation_rate = args
+    child1, child2 = crossover(parent1, parent2)
+    child1 = mutate(child1, mutation_rate)
+    child2 = mutate(child2, mutation_rate)
+    return child1 if child1.state_value > child2.state_value else child2
 
-def Unflatten(flattenCube):
-    cube = [[[0 for _ in range(5)] for _ in range(5)] for _ in range(5)]
-    flattenCubeIdx = 0
-    for z in range(5):
-        for x in range(5):
-            for y in range(5):
-                cube[z][x][y] = flattenCube[flattenCubeIdx]
-                flattenCubeIdx += 1
-    #             if(x+y <= z):
-    #                 cube[z][x][y] = flattenCube[flattenCubeIdx]
-    #                 flattenCubeIdx += 1
-    # for z in range(5):
-    #     for x in range(5):
-    #         for y in range(5):
-    #             if(x+y > z):
-    #                 cube[z][x][y] = flattenCube[flattenCubeIdx]
-    #                 flattenCubeIdx += 1
-    return cube
+def genetic(N=100, max_generations=1000, initial_mutation_rate=0.05, stagnation_limit=100):
+    population = [c.Cube(5, 5, 5, True) for _ in range(N)]
+    current_max_fit = max(population, key=lambda x: x.state_value)
+    values = [current_max_fit.state_value]
+    avg_values = [sum(ind.state_value for ind in population) / N]
+    no_improvement_count = 0
+    mutation_rate = initial_mutation_rate
+    elite_size = int(0.05 * N)
+    cubes = []
+    with mp.Pool(mp.cpu_count()) as pool:
+        for generation in range(max_generations):
+            new_population = heapq.nlargest(elite_size, population, key=lambda x: x.state_value)
 
-def CrossOver(parent1, parent2):
-    flattenParent1 = Flatten(parent1)
-    flattenParent2 = Flatten(parent2)
-    randomCrossIdx = random.randint(25,99)
-    flattenParent1[randomCrossIdx:], flattenParent2[randomCrossIdx:] = (flattenParent2[randomCrossIdx:]), (flattenParent1[randomCrossIdx:])
-    
-    offspring1 = flattenParent1
-    offspring2 = flattenParent2
-    
-    return offspring1, offspring2
-    
-def Mutate(offspring):
-    
-    unassignedNumber = [e for e in range(1,126)]
-    duplicateElmtIdx = []
-    
-    for i, number in enumerate(offspring):
-        if(number in unassignedNumber):
-            unassignedNumber.remove(number)
-        else:
-            duplicateElmtIdx.append(i)
-    
-    for idx in duplicateElmtIdx:
-        randIdx = random.randint(0,len(unassignedNumber)-1)
-        number = unassignedNumber[randIdx]
-        offspring[idx] = number
-        unassignedNumber.remove(number)
-    
-    cubeOffspring = Unflatten(offspring)
-    return cubeOffspring
 
-def GeneticAlgorithm(k, maxIter):
-    population, fitnessValPopulation = GeneratePopulation(k)
-    
-    iter = 0
-    bestVal = -1
-    bestCube = []
-    bestCubeCurrPopulationIdx = -1
-    
-    while(iter < maxIter):
-        print("Iteration:",iter)
-        
-        newPopulation = []
-        newfitnessValPopulation = []
-        bestVal = -1
-        bestCubeCurrPopulationIdx = -1
-        currNewPopulationIdx = 0
-        
-        while(len(newPopulation) < k):
-            parent1, parent2 = SelectParent(population, fitnessValPopulation)
-            
-            offspring1, offspring2 = CrossOver(parent1, parent2)
-            
-            offspring1 = Mutate(offspring1)
-            fitnessValOffspring1 = totalRule+objFunc(offspring1)
-            
-            if(bestVal == -1 or bestVal < fitnessValOffspring1):
-                bestVal = fitnessValOffspring1
-                bestCube = offspring1[:]
-                bestCubeCurrPopulationIdx = currNewPopulationIdx
-            
-            newPopulation.append(offspring1)
-            newfitnessValPopulation.append(fitnessValOffspring1)
-            currNewPopulationIdx += 1
-            
-            # Untuk menghandle jika jumlah populasi ganjil
-            if(len(newPopulation) < k):
-                offspring2 = Mutate(offspring2)
-                fitnessValOffspring2 = totalRule+objFunc(offspring2)
-                
-                if(bestVal == -1 or bestVal < fitnessValOffspring2):
-                    bestVal = fitnessValOffspring2
-                    bestCube = offspring2[:]
-                    bestCubeCurrPopulationIdx = currNewPopulationIdx
-                
-                newPopulation.append(offspring2)
-                newfitnessValPopulation.append(fitnessValOffspring2)
-                currNewPopulationIdx += 1
-                
-        population = newPopulation[:]
-        fitnessValPopulation = newfitnessValPopulation[:]
-        print("NewFitnessValPop:", newfitnessValPopulation)
-        
-        iter += 1
-        
-        print("Fitness Funct:", fitnessValPopulation)
-    
-    print("Best fitness funct:",bestVal)
-    return population[bestCubeCurrPopulationIdx], fitnessValPopulation[bestCubeCurrPopulationIdx]
+            mutation_rate = min(0.3, mutation_rate * 1.2) if no_improvement_count > stagnation_limit / 2 else initial_mutation_rate
 
-for level in (GeneticAlgorithm(40,10000)):
-    print(level)
+            tasks = [
+                (roulette_wheel_selection(population), roulette_wheel_selection(population), mutation_rate)
+                for _ in range((N - elite_size))
+            ]
+
+            children = pool.map(create_child_task, tasks)
+            new_population.extend(children)
+
+            population = heapq.nlargest(N, new_population, key=lambda x: x.state_value)
+
+            best_child = population[0]
+
+            if best_child.state_value > current_max_fit.state_value:
+                current_max_fit = best_child
+                no_improvement_count = 0
+            else:
+                no_improvement_count += 1
+
+            if(generation%100 == 0):
+                print(f"Generation {generation}: Current max fitness = {current_max_fit.state_value}")
+
+            if no_improvement_count >= stagnation_limit:
+                print("STAGNATION ALERT !!!")
+                random_individuals = [c.Cube(5, 5, 5, True) for _ in range(int(0.5 * N))]
+                population = population[:int(0.5 * N)] + random_individuals
+                no_improvement_count = 0
+
+            values.append(current_max_fit.state_value)
+            cubes.append(current_max_fit)
+            avg_values.append(sum(ind.state_value for ind in population) / N)
+
+    return current_max_fit, values, avg_values, cubes, generation + 1
