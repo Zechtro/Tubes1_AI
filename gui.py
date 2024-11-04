@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
-from flet import Container, Slider, ElevatedButton, Row, Column, Image, Dropdown, dropdown, alignment
+from flet import Slider, ElevatedButton, Row, Column, Image, Dropdown, dropdown, FilePicker, FilePickerResultEvent, AlertDialog, Text
 import base64
 import threading
 import time
@@ -24,36 +24,56 @@ progress_slider = None
 def create_dummy():
     global matrix_3d
     print("create dummy")
-    cube = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125]
-    matrix_3d = []
-    matrix_3d.append(cube)
+    cube = list(range(1, 126))
+    matrix_3d = [cube]
 
-def read_json_to_array():
+def read_json_content(file_content):
     global matrix_3d, total_iter
-    matrix_3d = []
-    print("read json")
-    with open("state.json", "r") as file:
-        matrix_3d = json.load(file)
-    total_iter = len(matrix_3d)
+    try:
+        matrix_3d = json.loads(file_content)
+        total_iter = len(matrix_3d)
+        print("read json content")
+    except json.JSONDecodeError:
+        print("read json error")
 
-def on_click_load_file(page):
+def show_error_dialog(page, message):
+    error_dialog = AlertDialog(
+        title=Text("Error"),
+        content=Text(message),
+        actions=[ElevatedButton(text="OK", on_click=lambda e: close_dialog(page))],
+    )
+    page.dialog = error_dialog
+    page.dialog.open = True
+    page.update()
+
+def close_dialog(page):
+    page.dialog.open = False
+    page.update()
+
+def on_file_selected(e: FilePickerResultEvent):
+    if e.files:
+        file = e.files[0]
+        if file.path.endswith(".json"):
+            with open(file.path, "r") as f:
+                file_content = f.read()
+                read_json_content(file_content)
+                update_plot_image(e.page)
+        else:
+            show_error_dialog(e.page, "Error, only JSON files are accepted!")
+
+def update_plot_image(page):
     global plot_image, total_iter, progress_slider
-    print("load file")
-    read_json_to_array()
-    plot_image.update()
-    print(total_iter)
-    print(matrix_3d)
+    plot_image.src_base64 = update_plot()
     progress_slider.max = total_iter - 1
     progress_slider.divisions = total_iter - 1
-    progress_slider.value = 0 
+    progress_slider.value = 0
     progress_slider.label = "{value}"
     page.update()
 
 def update_plot():
-    print("update plot")
     global iter, matrix_3d, global_min, global_max
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-
+    
     array_1d = np.array(matrix_3d[iter]).reshape(5, 5, 5)
     for i in range(5):
         layer = array_1d[i, :, :]
@@ -61,10 +81,10 @@ def update_plot():
         row = i // 3
         col = i % 3
 
-        sns.heatmap(layer, annot=True, fmt='d', cmap='icefire', ax=axes[row, col], 
+        sns.heatmap(layer, annot=True, fmt='d', cmap='icefire', ax=axes[row, col],
                     cbar=False,
                     vmin=global_min,
-                    vmax=global_max, 
+                    vmax=global_max,
                     xticklabels=[],
                     yticklabels=[])
 
@@ -83,14 +103,13 @@ def update_plot():
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 def play_loop(page):
-    print("play loop")
     global iter, is_playing
     while is_playing:
         iter = (iter + 1) % len(matrix_3d)
         progress_slider.value = iter
         plot_image.src_base64 = update_plot()
         page.update()
-        time.sleep(1 / playback_speed) 
+        time.sleep(1 / playback_speed)
 
 def on_play_pause_clicked(e):
     global is_playing, play_thread
@@ -98,24 +117,15 @@ def on_play_pause_clicked(e):
     e.control.text = "Pause" if is_playing else "Play"
     e.control.update()
     if is_playing:
-        print("loop played")
         play_thread = threading.Thread(target=play_loop, args=(e.page,))
         play_thread.start()
     else:
-        print("loop stopped")
         if play_thread:
             is_playing = False
 
-def update_image(page):
-    print("update image")
-    create_dummy()
-    plot_image.src_base64 = update_plot()
-    page.update()
-
 def on_slider_change(e):
-    global iter, progress_slider
+    global iter
     iter = int(e.control.value)
-    progress_slider.value = iter
     plot_image.src_base64 = update_plot()
     e.page.update()
 
@@ -126,12 +136,11 @@ def on_playback_speed_change(e):
 
 def main(page: ft.Page):
     create_dummy()
-    # read_json_to_array()
-    global progress_slider
+    global progress_slider, plot_image
 
     play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=50)
 
-    progress_slider = Slider(min=0, max=total_iter - 1, label = "{value}", divisions=total_iter, on_change=on_slider_change, height=50)
+    progress_slider = Slider(min=0, max=total_iter - 1, label="{value}", divisions=total_iter, on_change=on_slider_change, height=50)
 
     playback_speed_dropdown = Dropdown(
         label="Playback Speed",
@@ -143,22 +152,30 @@ def main(page: ft.Page):
             dropdown.Option("1"),
             dropdown.Option("1.25"),
             dropdown.Option("1.5"),
-            dropdown.Option("2")
+            dropdown.Option("2"),
+            dropdown.Option("4"),
+            dropdown.Option("8"),
+            dropdown.Option("16"),
+            dropdown.Option("32"),
+            dropdown.Option("64"),
+            dropdown.Option("128")
         ],
         on_change=on_playback_speed_change,
         width=200, height=50
     )
 
-    load_button = ElevatedButton(text="Load File", on_click=lambda e: on_click_load_file(page))
+    file_picker = FilePicker(on_result=on_file_selected)
 
-    global plot_image
+    upload_button = ElevatedButton(text="Upload JSON File", on_click=lambda e: file_picker.pick_files(), height=50)
+
     plot_image = Image(src_base64=update_plot(), width=700, height=500)
 
     page.add(
+        file_picker,
         Column(height=20),
         Column(
             [
-                Row([load_button, play_pause_button, playback_speed_dropdown], alignment="center"),
+                Row([upload_button, play_pause_button, playback_speed_dropdown], alignment="center"),
                 progress_slider,
                 plot_image
             ],
@@ -166,6 +183,5 @@ def main(page: ft.Page):
             horizontal_alignment="center"
         )
     )
-
 
 ft.app(target=main)
