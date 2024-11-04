@@ -23,7 +23,7 @@
 
 ## General Information
 This repository contains code for solving the magic cube 5x5x5 problem with the local search algorithm. The objective function used is the negaitf of how many errors. The error referred to here is a row of numbers with a predetermined position that does not match the magic number. The solution is executed by swapping 2 cells.
-
+![Video Player to Visualize Cube State](doc/gui.jpg)
 
 ## Features
 - Steepest Ascent Hill-climbing
