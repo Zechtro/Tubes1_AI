@@ -1,104 +1,86 @@
-import time
-init_cube1 = [[[i+(5*j)+(25*k) for i in range(1,6)] for j in range(0,5)] for k in range(0,5)]
-init_cube2 = [[[((i+(5*j)+(25*k)+42)%125 + 1) for i in range(1,6)] for j in range(0,5)] for k in range(0,5)]
-init_cube3 = [[[((i+(5*j)+(25*k)+84)%125 + 1) for i in range(1,6)] for j in range(0,5)] for k in range(0,5)]
-init_cubes = [init_cube1, init_cube2, init_cube3]
-banyak_percobaan = 3
+import sys
+from GeneticAlgorithm import genetic
+from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMoveCube
+from RandomRestartHillClimbing import RandomRestartHillClimbingCube
+from SimulatedAnnealing import SimulatedAnnealingCube
+from SteepestAscentHillClimbing import SteepestAscentHillClimbingCube
+from StochasticHillClimbing import StochasticHillClimbingCube
+from Cube import Cube
 
-# Steepest Ascend Hill-climbing
-from SteepestAscentHillClimbing import SteepestAscentHillClimbing
-sum_time = 0
-cubes_tiap_percobaan = []
-values_tiap_percobaan = []
-iteration_tiap_percobaan = []
-for cube in init_cubes:
-    start_time = time.perf_counter()
-    cubes, values, count_iter = SteepestAscentHillClimbing(cube)
-    end_time = time.perf_counter()
-    sum_time += (end_time-start_time)
-    
-    cubes_tiap_percobaan.append(cubes)
-    values_tiap_percobaan.append(values)
-    iteration_tiap_percobaan.append(count_iter)
-avg_time = sum_time/3
+def genetic_algorithm(N, max_generations):
+    print(f"Running Genetic Algorithm with N={N}, max_generations={max_generations}")
+    current_max_fit, values, avg_values, cubes, generation = genetic(N=N, max_generations=max_generations)
+    print("Final solution:")
+    current_max_fit.print_cube()
 
-# Hill-climbing with Sideways Move
-from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMove
-param_max_sideways = 100
-sum_time = 0
-cubes_tiap_percobaan = []
-values_tiap_percobaan = []
-iteration_tiap_percobaan = []
-for cube in init_cubes:
-    start_time = time.perf_counter()
-    cubes, values, count_iter = HillClimbingWithSidewaysMove(cube, param_max_sideways)
-    end_time = time.perf_counter()
-    sum_time += (end_time-start_time)
-    
-    cubes_tiap_percobaan.append(cubes)
-    values_tiap_percobaan.append(values)
-    iteration_tiap_percobaan.append(count_iter)
-avg_time = sum_time/3
+    return "Genetic Algorithm Result"
 
-# Random Restart Hill-climbing
-from RandomRestartHillClimbing import RandomRestartHillClimbing
-param_max_restart = 3
-sum_time = 0
-cubesPerRestart_tiap_percobaan = []
-valuesPerRestart_tiap_percobaan = []
-iterationPerRestart_tiap_percobaan = []
-restart_tiap_percobaan = []
-for cube in init_cubes:
-    start_time = time.perf_counter()
-    cubes, values, iterations, restarts = RandomRestartHillClimbing(cube, param_max_restart)
-    end_time = time.perf_counter()
-    sum_time += (end_time-start_time)
-    
-    cubesPerRestart_tiap_percobaan.append(cubes)
-    valuesPerRestart_tiap_percobaan.append(values)
-    iterationPerRestart_tiap_percobaan.append(iterations)
-    restart_tiap_percobaan.append(restarts)
-avg_time = sum_time/3
+def hill_climbing_with_sideways(max_sideways):
+    print(f"Running Hill Climbing with Sideways Move, max_sideways={max_sideways}")
+    cubes, values, count_iter = HillClimbingWithSidewaysMoveCube(Cube(5,5,5,True), max_sideways=max_sideways)
+    return "Hill Climbing with Sideways Result"
 
-# Stochastic Hill-climbing
-from StochasticHillClimbing import StochasticHillClimbing
-param_iteration = 100
-sum_time = 0
-cubes_tiap_percobaan = []
-values_tiap_percobaan = []
-iteration_tiap_percobaan = []
-for cube in init_cubes:
-    start_time = time.perf_counter()
-    cubes, values, count_iter = StochasticHillClimbing(cube, param_iteration)
-    end_time = time.perf_counter()
-    sum_time += (end_time-start_time)
-    
-    cubes_tiap_percobaan.append(cubes)
-    values_tiap_percobaan.append(values)
-    iteration_tiap_percobaan.append(count_iter)
-avg_time = sum_time/3
+def random_restart_hill_climbing(max_restart):
+    print(f"Running Random Restart Hill Climbing, max_restart={max_restart}")
+    cubes_per_restart, values_per_restart, iteration_per_restart, restart = RandomRestartHillClimbingCube(Cube(5,5,5,True), max_restart=max_restart)
+    return "Random Restart Hill Climbing Result"
 
-# Simulated Annealing
-from SimulatedAnnealing import SimulatedAnnealing
-param_initial_T = 900
-param_cooling_rate = 0.99
-sum_time = 0
-cubes_tiap_percobaan = []
-values_tiap_percobaan = []
-iteration_tiap_percobaan = []
-e_probs_tiap_percobaan = [] # nilai e^(deltaE/T) per iterasi tiap percobaan
-count_stuck_tiap_percobaan = []
-for cube in init_cubes:
-    start_time = time.perf_counter()
-    cubes, values, count_iter, e_probs, count_stuck = SimulatedAnnealing(cube, param_initial_T, param_cooling_rate)
-    end_time = time.perf_counter()
-    sum_time += (end_time-start_time)
-    
-    cubes_tiap_percobaan.append(cubes)
-    values_tiap_percobaan.append(values)
-    iteration_tiap_percobaan.append(count_iter)
-    e_probs_tiap_percobaan.append(e_probs)
-    count_stuck_tiap_percobaan(count_stuck)
-avg_time = sum_time/3
+def simulated_annealing():
+    print("Running Simulated Annealing")
+    cubes, values, count_iter, e_probs, count_stuck = SimulatedAnnealingCube(Cube(5,5,5,True), 1000,0.99)
+    return "Simulated Annealing Result"
 
-# Genetic Algorithm
+def steepest_ascent_hill_climbing():
+    print("Running Steepest Ascent Hill Climbing")
+    cubes, values, count_iter = SteepestAscentHillClimbingCube(Cube(5,5,5,True))
+    return "Steepest Ascent Hill Climbing Result"
+
+def stochastic_hill_climbing(max_iterations):
+    print("Running Stochastic Hill Climbing")
+    cubes, values, iter = StochasticHillClimbingCube(Cube(5,5,5,True), max_iter=max_iterations )
+    return "Stochastic Hill Climbing Result"
+
+# Main function for the menu
+def main():
+    print("Choose an algorithm to run:")
+    print("1. Genetic Algorithm")
+    print("2. Hill Climbing with Sideways Move")
+    print("3. Random Restart Hill Climbing")
+    print("4. Simulated Annealing")
+    print("5. Steepest Ascent Hill Climbing")
+    print("6. Stochastic Hill Climbing")
+
+    choice = input("Enter the number of the algorithm you want to run (1-6): ")
+
+    if choice == '1':
+        N = int(input("Enter the maximum population size (N): "))
+        max_generations = int(input("Enter the maximum number of generations: "))
+        result = genetic_algorithm(N, max_generations)
+
+    elif choice == '2':
+        max_sideways = int(input("Enter the maximum number of sideways moves allowed: "))
+        result = hill_climbing_with_sideways(max_sideways)
+
+    elif choice == '3':
+        max_restart = int(input("Enter the maximum number of restarts allowed: "))
+        result = random_restart_hill_climbing(max_restart)
+
+    elif choice == '4':
+        result = simulated_annealing()
+
+    elif choice == '5':
+        result = steepest_ascent_hill_climbing()
+
+    elif choice == '6':
+        max_restart = int(input("Enter the maximum number of iterations allowed: "))
+        result = stochastic_hill_climbing()
+
+    else:
+        print("Invalid choice. Please select a number between 1 and 6.")
+        sys.exit(1)
+
+    print("\nAlgorithm result:")
+    print(result)
+
+if __name__ == "__main__":
+    main()
