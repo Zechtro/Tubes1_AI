@@ -45,6 +45,7 @@ def on_click_load_file(page):
     progress_slider.max = total_iter - 1
     progress_slider.divisions = total_iter - 1
     progress_slider.value = 0 
+    progress_slider.label = "{value}"
     page.update()
 
 def update_plot():
@@ -129,7 +130,7 @@ def main(page: ft.Page):
 
     play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=40)
 
-    progress_slider = Slider(min=0, max=total_iter - 1, divisions=total_iter, on_change=on_slider_change, height=40)
+    progress_slider = Slider(min=0, max=total_iter - 1, label = "{value}", divisions=total_iter, on_change=on_slider_change, height=40)
 
     playback_speed_dropdown = Dropdown(
         label="Playback Speed",
