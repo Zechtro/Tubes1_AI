@@ -12,7 +12,8 @@ import json
 plt.switch_backend("Agg")
 
 matrix_3d = []
-global_min, global_max = None, None
+global_min = 0
+global_max = 125
 playback_speed = 1
 is_playing = False
 play_thread = None
@@ -60,7 +61,7 @@ def update_plot():
         row = i // 3
         col = i % 3
 
-        sns.heatmap(layer, annot=True, fmt='d', cmap='plasma', ax=axes[row, col], 
+        sns.heatmap(layer, annot=True, fmt='d', cmap='icefire', ax=axes[row, col], 
                     cbar=False,
                     vmin=global_min,
                     vmax=global_max, 
@@ -128,9 +129,9 @@ def main(page: ft.Page):
     # read_json_to_array()
     global progress_slider
 
-    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=40)
+    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=50)
 
-    progress_slider = Slider(min=0, max=total_iter - 1, label = "{value}", divisions=total_iter, on_change=on_slider_change, height=40)
+    progress_slider = Slider(min=0, max=total_iter - 1, label = "{value}", divisions=total_iter, on_change=on_slider_change, height=50)
 
     playback_speed_dropdown = Dropdown(
         label="Playback Speed",
@@ -145,7 +146,7 @@ def main(page: ft.Page):
             dropdown.Option("2")
         ],
         on_change=on_playback_speed_change,
-        width=200, height=40
+        width=200, height=50
     )
 
     load_button = ElevatedButton(text="Load File", on_click=lambda e: on_click_load_file(page))
