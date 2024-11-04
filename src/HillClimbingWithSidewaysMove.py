@@ -26,8 +26,9 @@ def HillClimbingWithSidewaysMoveCube(init_cube, max_sideways):
                 sideways_count += 1
             current_cube = best_neighbor
             current_value = neighbor_value
-            
+
         cubes.append(current_cube)
+        print(len(cubes))
         values.append(current_value)
         print("Current val:", current_value, "| Neighbor Val:", neighbor_value, "| Sideways Count:", sideways_count)
 
