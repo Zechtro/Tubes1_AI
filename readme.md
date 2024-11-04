@@ -92,7 +92,6 @@ pip install seaborn
 
 ## Job Descriptions
 
-|----------|----------------------------------------------------------------------------------------------------------------------------|
 | NIM      | Responsibilities                                                                                                           |
 |----------|----------------------------------------------------------------------------------------------------------------------------|
 | 13522061 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI, Report                                                  |
@@ -100,4 +99,3 @@ pip install seaborn
 | 13522083 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI (bonus), Report                                          |
 | 13522103 | Visualization, Genetic Algorithm, Report                                                                                   |
 | 13521154 | Simulated Annealing, Stochastic HC, Report                                                                                 |
-|----------|----------------------------------------------------------------------------------------------------------------------------|
