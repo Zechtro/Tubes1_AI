@@ -18,37 +18,41 @@ is_playing = False
 play_thread = None
 iter = 0
 total_iter = 0
+progress_slider = None
 
 def create_dummy():
     global matrix_3d
+    print("create dummy")
     cube = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125]
     matrix_3d = []
     matrix_3d.append(cube)
 
-def save_cube_to_file():
-    global matrix_3d
-    with open("state.txt", "w") as f:
-        for iteration, cube in enumerate(matrix_3d):
-            f.write(f"Iteration {iteration + 1} \n\n")
-            for i in range(cube.shape[0]):
-                layer = cube[i, :, :]
-                f.write(f"Layer {i + 1}\n")
-                np.savetxt(f, layer, fmt='%d', delimiter=' ')
-                f.write("\n")
-
 def read_json_to_array():
     global matrix_3d, total_iter
+    matrix_3d = []
+    print("read json")
     with open("state.json", "r") as file:
         matrix_3d = json.load(file)
     total_iter = len(matrix_3d)
 
+def on_click_load_file(page):
+    global plot_image, total_iter, progress_slider
+    print("load file")
+    read_json_to_array()
+    plot_image = Image(src_base64=update_plot(), width=700, height=500)
+    print(total_iter)
+    print(matrix_3d)
+    progress_slider.max = total_iter - 1
+    progress_slider.divisions = total_iter - 1
+    progress_slider.value = 0 
+    page.update()
 
 def update_plot():
+    print("update plot")
     global iter, matrix_3d, global_min, global_max
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
 
     array_1d = np.array(matrix_3d[iter]).reshape(5, 5, 5)
-
     for i in range(5):
         layer = array_1d[i, :, :]
         
@@ -77,6 +81,7 @@ def update_plot():
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 def play_loop(page):
+    print("play loop")
     global iter, is_playing
     while is_playing:
         iter = (iter + 1) % len(matrix_3d)
@@ -91,19 +96,22 @@ def on_play_pause_clicked(e):
     e.control.text = "Pause" if is_playing else "Play"
     e.control.update()
     if is_playing:
+        print("loop played")
         play_thread = threading.Thread(target=play_loop, args=(e.page,))
         play_thread.start()
     else:
+        print("loop stopped")
         if play_thread:
             is_playing = False
 
 def update_image(page):
+    print("update image")
     create_dummy()
     plot_image.src_base64 = update_plot()
     page.update()
 
 def on_slider_change(e):
-    global iter 
+    global iter, progress_slider
     iter = int(e.control.value)
     progress_slider.value = iter
     plot_image.src_base64 = update_plot()
@@ -115,12 +123,13 @@ def on_playback_speed_change(e):
     print("Playback Speed:", playback_speed)
 
 def main(page: ft.Page):
-    read_json_to_array()
-
-    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=40)
+    create_dummy()
+    # read_json_to_array()
     global progress_slider
 
-    progress_slider = Slider(min=0, max=len(matrix_3d) - 1, divisions=len(matrix_3d) - 1, on_change=on_slider_change, height=40)
+    play_pause_button = ElevatedButton(text="Play", on_click=on_play_pause_clicked, height=40)
+
+    progress_slider = Slider(min=0, max=total_iter - 1, divisions=total_iter, on_change=on_slider_change, height=40)
 
     playback_speed_dropdown = Dropdown(
         label="Playback Speed",
@@ -138,7 +147,7 @@ def main(page: ft.Page):
         width=200, height=40
     )
 
-    load_button = ElevatedButton(text="Load File", on_click=lambda e: save_cube_to_file)
+    load_button = ElevatedButton(text="Load File", on_click=lambda e: on_click_load_file(page))
 
     global plot_image
     plot_image = Image(src_base64=update_plot(), width=700, height=500)
