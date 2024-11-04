@@ -16,22 +16,28 @@ def crossover(parent1, parent2):
     child1_array = [None] * size
     child2_array = [None] * size
     start, end = sorted(random.sample(range(size), 2))
-    child1_array[start : end + 1] = parent1.array[start : end + 1]
-    child2_array[start : end + 1] = parent2.array[start : end + 1]
+    
+    child1_array[start : end+1] = parent1.array[start : end+1]
+    child2_array[start : end+1] = parent2.array[start : end+1]
 
-    def fill_remaining(child, parent):
-        current_pos = (end + 1) % size
-        for gene in parent:
-            if gene not in child:
-                while child[current_pos] is not None:
-                    current_pos = (current_pos + 1) % size
-                child[current_pos] = gene
+    used1 = set(child1_array[start : end+1])
+    used2 = set(child2_array[start : end+1])
+    
+    # Create remaining values lists
+    remaining1 = [x for x in parent2.array if x not in used1]
+    remaining2 = [x for x in parent1.array if x not in used2]
 
-    fill_remaining(child1_array, parent2.array)
-    fill_remaining(child2_array, parent1.array)
+    idx1 = idx2 = 0
+    for i in range(size):
+        if i < start or i > end:
+            child1_array[i] = remaining1[idx1]
+            child2_array[i] = remaining2[idx2]
+            idx1 += 1
+            idx2 += 1
     
     child1 = c.Cube(parent1.x_size, parent1.y_size, parent1.z_size, array=child1_array)
     child2 = c.Cube(parent2.x_size, parent2.y_size, parent2.z_size, array=child2_array)
+    
     return child1, child2
 
 def roulette_wheel_selection(population):
