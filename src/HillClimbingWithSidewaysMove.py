@@ -20,7 +20,9 @@ def HillClimbingWithSidewaysMoveCube(init_cube, max_sideways):
         neighbor_value = max(neighbors_value)
         
         if neighbor_value >= current_value:
-            if neighbor_value == current_value:
+            if neighbor_value > current_value:
+                sideways_count = 0
+            elif neighbor_value == current_value:
                 sideways_count += 1
             current_cube = best_neighbor
             current_value = neighbor_value
