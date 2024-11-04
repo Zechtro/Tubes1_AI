@@ -19,6 +19,17 @@ class Cube:
         if array:
             self.array = array
             self.state_value = objective_function(self)
+    
+    def to_3d_array(self,  x_size=5, y_size=5, z_size=5):
+        cube_3d = []
+        for x in range(x_size):
+            layer = []
+            for y in range(y_size):
+                row = self.array[(x * y_size * z_size) + (y * z_size): (x * y_size * z_size) + (y * z_size) + z_size]
+                layer.append(row)
+            cube_3d.append(layer)
+        
+        return cube_3d
 
     def random_cube(self):
         numbers = list(range(1, self.x_size**3 + 1))
@@ -158,3 +169,4 @@ def objective_function(cube):
         + check_space_diagonals(cube)
     )
     return sum(1 for el in arr if el == cube.magic_number)
+
