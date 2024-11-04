@@ -39,7 +39,7 @@ def on_click_load_file(page):
     global plot_image, total_iter, progress_slider
     print("load file")
     read_json_to_array()
-    plot_image = Image(src_base64=update_plot(), width=700, height=500)
+    plot_image.update()
     print(total_iter)
     print(matrix_3d)
     progress_slider.max = total_iter - 1
