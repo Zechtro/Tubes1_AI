@@ -1,7 +1,7 @@
-# Pencarian Solusi Diagonal Magic Cube dengan Local Search
-## IF3170 Inteligensi Artifisial
+# Finding Solutions for Diagonal Magic Cube Using Local Search
+## IF3170 Artificial Intelligence
 
-> Anggota Kelompok:<br>
+> Group Member:<br>
 > 1. 13522061 Maximilian Sulistiyo<br>
 > 2. 13522075 Marvel Pangondian<br>
 > 3. 13522083 Evelyn Yosiana<br>
@@ -22,7 +22,7 @@
 
 
 ## General Information
-This repository contains code for solving the magic cube 5*5*5 problem with the local search algorithm. The objective function used is the negaitf of how many errors. The error referred to here is a row of numbers with a predetermined position that does not match the magic number. The solution is executed by swapping 2 cells.
+This repository contains code for solving the magic cube 5x5x5 problem with the local search algorithm. The objective function used is the negaitf of how many errors. The error referred to here is a row of numbers with a predetermined position that does not match the magic number. The solution is executed by swapping 2 cells.
 
 
 ## Features
@@ -64,14 +64,40 @@ pip install seaborn
    https://github.com/Zechtro/Tubes1_AI.git
    ```
 
+2. **Generate JSON file of Cube result per iteration while displaying Objective Function plot on each iteration**
+
+   Pro Tip: keep this terminal running to compare the step-by-step visualization (because sometimes there is no change of cube state (flat objective function) so the cube state doesn't change on the "video player")
+
+   ```shell
+   python src/Main.py
+   ```
+
+   or
+
+   ```shell
+   python3 src/Main.py
+   ```
+
+3. **Run GUI to visualize step-by-step of algorithm used on "video player"**
+
+   ```shell
+   python gui.py
+   ```
+
+   or
+
+   ```shell
+   python3 gui.py
+   ```
+
 ## Job Descriptions
 
-| NIM      | Responsibilities                                                                                            |
-|----------|-------------------------------------------------------------------------------------------------------------|
-| 13522061 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI, Report |
+|----------|----------------------------------------------------------------------------------------------------------------------------|
+| NIM      | Responsibilities                                                                                                           |
+|----------|----------------------------------------------------------------------------------------------------------------------------|
+| 13522061 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI, Report                                                  |
 | 13522075 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, Stochastic HC, Simulated Annealing, Genetic Algorithm, Report|
-| 13522083 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI (bonus), Report |
-| 13522103 | Visualization, Genetic Algorithm, Report |
-| 13521154 | Simulated Annealing, Stochastic HC, Report |
-
-
+| 13522083 | Steepest Ascent HC, HC with Sideways Move, Random Restart HC, GUI (bonus), Report                                          |
+| 13522103 | Visualization, Genetic Algorithm, Report                                                                                   |
+| 13521154 | Simulated Annealing, Stochastic HC, Report                                                                                 |
+|----------|----------------------------------------------------------------------------------------------------------------------------|

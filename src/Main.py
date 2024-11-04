@@ -1,4 +1,7 @@
 import sys
+
+from matplotlib import pyplot as plt
+import numpy as np
 from GeneticAlgorithm import genetic
 from HillClimbingWithSidewaysMove import HillClimbingWithSidewaysMoveCube
 from RandomRestartHillClimbing import RandomRestartHillClimbingCube
@@ -8,6 +11,7 @@ from StochasticHillClimbing import StochasticHillClimbingCube
 from Cube import Cube, random_1d_array
 import os
 import json
+from datetime import datetime
 
 
 def output(cubes, current_max_fit, values):
@@ -18,19 +22,42 @@ def output(cubes, current_max_fit, values):
     print("Final state:")
     current_max_fit.print_cube()
     print(f"Final state value : {values[-1]}")
+    
     generate_json(cubes)
+    
+    def displayPlotValuePerIteration(values):
+        array = np.array(values)
+        
+        x = np.arange(1, len(array) + 1)
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(x, array, marker='o', linestyle='-', color='b', label='Objective Function Value')
+        plt.xlabel('Iteration')
+        plt.ylabel('Objective Function Value')
+        plt.title('Objective Function per Iteration')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+    
+    print("\n=== Displaying Values on each iteration ===\n")
+    print("Pro Tip: Open another terminal and run the gui.py program and see the change on the iteration where the objective function value is also changing in the plot")
+    displayPlotValuePerIteration(values)
+    
 
 def generate_json(cubes):
     cube_arrays = [cube.array for cube in cubes]
-    json_file_path = os.path.join(os.path.dirname(__file__), "../state.json")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"cubes_{timestamp}"
+    json_file_path = os.path.join(os.path.dirname(__file__), f"../{filename}.json")
     with open(json_file_path, "w") as json_file:
         json.dump(cube_arrays, json_file, indent=4)
+        
+    print(f"Result written in {filename}.json")
     
 def genetic_algorithm(N, max_generations):
     print(f"Running Genetic Algorithm with N={N}, max_generations={max_generations}")
     current_max_fit, values, avg_values, cubes, generation = genetic(N=N, max_generations=max_generations)
     output(cubes=cubes,current_max_fit=current_max_fit, values=values)
-
 
     return "Genetic Algorithm Result"
 
@@ -94,15 +121,15 @@ def main():
 
     elif choice == '4':
         initial_temperature = int(input("Enter Initial Temperature: "))
-        cooling_rate = int(input("Enter cooling rate: "))
+        cooling_rate = float(input("Enter cooling rate: "))
         result = simulated_annealing(initial_temperature=initial_temperature, cooling_rate=cooling_rate)
 
     elif choice == '5':
         result = steepest_ascent_hill_climbing()
 
     elif choice == '6':
-        max_restart = int(input("Enter the maximum number of iterations allowed: "))
-        result = stochastic_hill_climbing()
+        max_iter = int(input("Enter the maximum number of iterations allowed: "))
+        result = stochastic_hill_climbing(max_iter)
 
     else:
         print("Invalid choice. Please select a number between 1 and 6.")
